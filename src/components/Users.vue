@@ -1,9 +1,6 @@
 <template>
   <div class="hello">
-    <div v-if="!loaded">
-      <h1>Loading...</h1>
-    </div>
-    <ul v-else>
+    <ul>
       <li v-for="user in users">
         {{ user.name }}
       </li>
@@ -14,22 +11,7 @@
 <script>
 export default {
   name: 'users',
-  data () {
-    return {
-      loaded: false,
-      users: []
-    }
-  },
-  mounted () {
-    const URL = '/api/v1/users'
-
-    window.fetch(URL)
-    .then(res => res.json())
-    .then(users => {
-      this.users = users
-      this.loaded = true
-    })
-  }
+  props: ['users']
 }
 </script>
 
