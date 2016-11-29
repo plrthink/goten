@@ -1,4 +1,4 @@
-# mockingbot-frontend
+# Goten
 
 > A Vue.js project
 

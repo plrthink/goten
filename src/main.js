@@ -1,9 +1,8 @@
-import Vue from 'vue'
-import App from './App'
+import createApp from './app'
 
-/* eslint-disable no-new */
-new Vue({
-  el: '#app',
-  template: '<App/>',
-  components: { App }
-})
+const initialState = {
+  users: window.__INITIAL_STATE__ || []
+}
+const app = createApp(initialState)
+
+app.$mount('#app')

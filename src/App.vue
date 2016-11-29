@@ -9,8 +9,9 @@ import Users from './components/Users'
 import Promise from 'es6-promise'
 Promise.polyfill()
 import fetch from 'isomorphic-fetch'
+import queryString from 'query-string'
 
-const URL = 'http://localhost:5000/api/v1/users'
+const URL = '/api/v1/users'
 
 export default {
   name: 'app',
@@ -19,19 +20,23 @@ export default {
   },
   data () {
     return {
-      users: []
+      users: this.$options.store.users
     }
   },
   mounted () {
-    this.getInitialUsers()
+    this.getUsers(1, 1)
   },
   methods: {
-    getInitialUsers () {
-      return fetch(URL)
+    getUsers (offset, limit) {
+      var params = queryString.stringify({
+        offset,
+        limit
+      })
+      return fetch(`${URL}?${params}`)
       .then(res => res.json())
       .then(users => {
-        this.users = users
-        return Promise.resolve()
+        this.users = this.users.concat(users)
+        return users
       })
     }
   }

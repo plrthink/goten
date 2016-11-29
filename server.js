@@ -3,6 +3,7 @@ var fs = require('fs')
 var path = require('path')
 var favicon = require('serve-favicon')
 var proxyMiddleware = require('http-proxy-middleware')
+var serialize = require('serialize-javascript')
 var config = require('./config')
 // Get the HTML layout
 var layout = fs.readFileSync(path.resolve('./dist/index.html'), 'utf-8')
@@ -26,10 +27,18 @@ Object.keys(proxyTable).forEach(function (context) {
   }
   server.use(proxyMiddleware(context, options))
 })
+
+function parseIndex (template) {
+  var contentMarker = '<!-- APP -->'
+  var i = template.indexOf(contentMarker)
+  return i + contentMarker.length
+}
+
 // Handle all GET requests
 server.get('*', function (request, response) {
   // Render our Vue app to a string
-  bundleRenderer.renderToString({ url: request.url }, function (error, html) {
+  var context = { url: request.url }
+  bundleRenderer.renderToString(context, function (error, html) {
     // Handle the rendered result
     // If an error occurred while rendering...
     if (error) {
@@ -41,8 +50,21 @@ server.get('*', function (request, response) {
         .status(500)
         .send('Server Error')
     }
+
     // Send the layout with the rendered app's HTML
-    response.send(layout.replace('<div id=app></div>', html))
+    var renderedLayout = layout.replace('<div id=app></div>', html)
+    if (typeof context.initialState !== undefined) {
+      // add snippt before any script tag
+      const insertAt = parseIndex(renderedLayout)
+      renderedLayout =
+        `${renderedLayout.slice(0, insertAt)}
+          <script>window.__INITIAL_STATE__=${
+            serialize(context.initialState, { isJSON: true })
+          }</script>
+        ${renderedLayout.slice(insertAt)}`
+    }
+
+    response.send(renderedLayout)
   })
 })
 
